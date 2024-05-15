@@ -98,6 +98,52 @@ def diag_splitting(s):
                 flag = 1
     return num_tests,stages
 
+def num_infected(s):
+    inf_people = 0
+    for i in s:
+        inf_people += s[i]
+    return inf_people
+
+
+def SG(s, inf_people):
+    #s is the subgroup we are passing in
+    num_people = len(s)
+    print(num_people)
+    if(inf_people == 1):
+        print("Reached base case")
+        # run binary_splitting
+        return
+    
+    '''
+    Other case: when subgroups have relatively equal number of infected people left in them
+        ie avg # of infected people in them
+        case --> when inf_people = 
+    
+    '''
+
+    num_in_group = num_people // inf_people
+    print(num_in_group)
+    
+
+    for i in range(inf_people):        
+        subGroup = s[i*num_in_group:(i+1)*(num_in_group)]
+        if(i == inf_people-1):
+            subGroup = s[i*num_in_group:]
+        else:
+            subGroup = s[i*num_in_group:(i+1)*(num_in_group)]
+        
+        #recursively calls each subgroup
+        SG(subGroup, num_infected(subGroup))
+        
+
+    '''
+    want s[a:b]
+        where b - a = num_in group
+        subgroup_index = i
+        first one = s[0:num_in_group]
+        s[i*num_in_group : (i+1)(num_in_group)]
+    '''
+
 def Qtesting1(s):
     '''
     s(np.array): binary string of infection status
