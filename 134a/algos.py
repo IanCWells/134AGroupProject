@@ -105,14 +105,16 @@ def num_infected(s):
     return inf_people
 
 
-def SG(s, inf_people):
+def SG(s, inf_people, num_tests, num_stages):
+    print("\n\tTest no: ", num_tests)
     #s is the subgroup we are passing in
+    print("s subgroup: ", s)
     num_people = len(s)
-    print(num_people)
-    if(inf_people == 1):
+    if(inf_people <= 1):
         print("Reached base case")
         # run binary_splitting
-        return
+        binary_splitting(s)
+        return 1, 0
     
     '''
     Other case: when subgroups have relatively equal number of infected people left in them
@@ -122,27 +124,23 @@ def SG(s, inf_people):
     '''
 
     num_in_group = num_people // inf_people
-    print(num_in_group)
+    print("Number in group: ", num_in_group)
     
 
     for i in range(inf_people):        
         subGroup = s[i*num_in_group:(i+1)*(num_in_group)]
+        num_stages += 1
         if(i == inf_people-1):
             subGroup = s[i*num_in_group:]
         else:
             subGroup = s[i*num_in_group:(i+1)*(num_in_group)]
         
         #recursively calls each subgroup
-        SG(subGroup, num_infected(subGroup))
-        
-
-    '''
-    want s[a:b]
-        where b - a = num_in group
-        subgroup_index = i
-        first one = s[0:num_in_group]
-        s[i*num_in_group : (i+1)(num_in_group)]
-    '''
+        t, _ = SG(subGroup, num_infected(subGroup), num_tests, num_stages)
+        num_tests += t
+    
+    return num_tests, num_stages
+    
 
 def Qtesting1(s):
     '''
@@ -152,12 +150,12 @@ def Qtesting1(s):
     stages = 0
     ###################################################
     '''your code here'''
+    print("RUNNING TEST ON original: ", s, "\n")
+    num_tests, stages = SG(s, num_infected(s), num_tests, stages)
 
     ###################################################
 
-
-
-    return num_tests,stages
+    return num_tests-1,stages-1     # TODO: not sure why it's -1
 
 
 def Qtesting2(s):
