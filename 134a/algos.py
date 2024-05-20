@@ -104,7 +104,7 @@ def num_infected(s):
         inf_people += s[i]
     return inf_people
 
-
+'''
 def SG(s, inf_people, num_tests, num_stages):
     print("\n\tTest no: ", num_tests)
     #s is the subgroup we are passing in
@@ -116,12 +116,11 @@ def SG(s, inf_people, num_tests, num_stages):
         binary_splitting(s)
         return 1, 0
     
-    '''
+
     Other case: when subgroups have relatively equal number of infected people left in them
         ie avg # of infected people in them
         case --> when inf_people = 
     
-    '''
 
     num_in_group = num_people // inf_people
     print("Number in group: ", num_in_group)
@@ -140,6 +139,34 @@ def SG(s, inf_people, num_tests, num_stages):
         num_tests += t
     
     return num_tests, num_stages
+'''
+
+def SG(s):
+    inf_people = num_infected(s)
+    print("\nTESTING group: ", s)
+
+    if (inf_people  == 1):
+        binary_tests, binary_stages, _ = binary_splitting(s)
+        print("--Num binary tests: ", binary_tests)
+        print("--Num binary stages: ", binary_stages)
+        return 1 + binary_tests
+    elif(inf_people < 1):
+        print("0 infected --> ran only 1 test")
+        return 1
+    else:
+        num_per_group = round(len(s)/inf_people)
+        
+        # for each subgroup, call function again
+        tests = 1 # = this testing rou
+        for i in range(inf_people):
+            if(i == inf_people-1):
+                subGroup = s[i*num_per_group:]
+            else:
+                subGroup = s[i*num_per_group:(i+1)*(num_per_group)]
+            
+            t = SG(subGroup)
+            tests += t   # number of tests in subtree
+        return tests
     
 
 def Qtesting1(s):
@@ -151,11 +178,11 @@ def Qtesting1(s):
     ###################################################
     '''your code here'''
     print("RUNNING TEST ON original: ", s, "\n")
-    num_tests, stages = SG(s, num_infected(s), num_tests, stages)
+    num_tests += SG(s)
 
     ###################################################
 
-    return num_tests-1,stages-1     # TODO: not sure why it's -1
+    return num_tests, stages
 
 
 def Qtesting2(s):
