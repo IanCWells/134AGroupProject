@@ -104,42 +104,6 @@ def num_infected(s):
         inf_people += s[i]
     return inf_people
 
-'''
-def SG(s, inf_people, num_tests, num_stages):
-    print("\n\tTest no: ", num_tests)
-    #s is the subgroup we are passing in
-    print("s subgroup: ", s)
-    num_people = len(s)
-    if(inf_people <= 1):
-        print("Reached base case")
-        # run binary_splitting
-        binary_splitting(s)
-        return 1, 0
-    
-
-    Other case: when subgroups have relatively equal number of infected people left in them
-        ie avg # of infected people in them
-        case --> when inf_people = 
-    
-
-    num_in_group = num_people // inf_people
-    print("Number in group: ", num_in_group)
-    
-
-    for i in range(inf_people):        
-        subGroup = s[i*num_in_group:(i+1)*(num_in_group)]
-        num_stages += 1
-        if(i == inf_people-1):
-            subGroup = s[i*num_in_group:]
-        else:
-            subGroup = s[i*num_in_group:(i+1)*(num_in_group)]
-        
-        #recursively calls each subgroup
-        t, _ = SG(subGroup, num_infected(subGroup), num_tests, num_stages)
-        num_tests += t
-    
-    return num_tests, num_stages
-'''
 
 def SG(s):
     inf_people = num_infected(s)
@@ -247,6 +211,93 @@ def lisa(s):
     ###################################################
 
     return num_tests, stages
+
+#Returns a quantized number depending on infections
+#0 
+#1 (1<= I < 2)
+#2 (2 <= I < 4)
+#3 (4 <= I < 8)
+#4 (>= 8)
+def num_infected2(s):
+    inf_people = 0
+    for i in range(len(s)):
+        inf_people += s[i]
+    
+    if(inf_people == 0):
+        return 0
+    elif(inf_people == 1):
+        return 1
+    elif(inf_people == 2 or inf_people == 3):
+        return 2
+    elif (inf_people < 8):
+        return 3
+    else:
+        return 4
+    
+    
+def pablo(s, max_stages):
+    inf_range = num_infected2(s)
+    print("\nTESTING group: ", s)
+  
+    if (inf_range == 0):
+        print("0 infected --> ran only 1 test")
+        return 1, 1
+    elif (inf_range  == 1):
+        # Only 1 infected person
+        if len(s) == 1:
+            return 1,1
+        else:
+            binary_tests, binary_stages, _ = binary_splitting(s)
+            print("--Num binary tests: ", binary_tests)
+            print("--Num binary stages: ", binary_stages)
+            return 1 + binary_tests, 1 + binary_stages
+   
+    inf_people = 0
+    if (inf_range == 2):
+        inf_people = 3
+    elif (inf_range == 3):
+        inf_people = 7
+    else:
+        inf_people = 8
+
+    num_per_group = round(len(s)/inf_people)
+        
+        # for each subgroup, call function again
+    tests = 1 # = this testing group
+    for i in range(inf_people):
+        stages = 1
+        if(i == inf_people-1):
+            subGroup = s[i*num_per_group:]
+        else:
+            subGroup = s[i*num_per_group:(i+1)*(num_per_group)]
+            
+        t, st = pablo(subGroup, max_stages)
+        stages += st
+        tests += t   # number of tests in subtree
+
+        # delete:
+        m = max(max_stages, stages)
+        if (m == stages and m != max_stages):
+            print("Updating max stages from ", max_stages, " to ", stages)
+
+        max_stages = max(max_stages, stages)
+    return tests, max_stages
+    
+
+def picasso(s):
+    '''
+    s(np.array): binary string of infection status
+    '''
+    num_tests = 0
+    stages = 0
+    ###################################################
+    '''your code here'''
+    print("RUNNING TEST ON original: ", s, "\n")
+    num_tests, stages = pablo(s, stages)
+    ###################################################
+
+    return num_tests,stages
+
 
 def Qtesting1_comm_aware(s,communities):
     '''
