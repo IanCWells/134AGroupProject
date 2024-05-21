@@ -200,7 +200,53 @@ def Qtesting2(s):
 
     return num_tests,stages
 
+def mona(s, max_stages):
+    inf_people = num_infected(s)
+    print("\nTESTING group: ", s)
+  
 
+    if (inf_people  == 1):
+        binary_tests, binary_stages, _ = binary_splitting(s)
+        print("--Num binary tests: ", binary_tests)
+        print("--Num binary stages: ", binary_stages)
+        return 1 + binary_tests, 1 + binary_stages
+    elif(inf_people < 1):
+        print("0 infected --> ran only 1 test")
+        return 1, 1
+    else:
+        num_per_group = round(len(s)/inf_people)
+        
+        # for each subgroup, call function again
+        tests = 1 # = this testing group
+        for i in range(inf_people):
+            stages = 1
+            if(i == inf_people-1):
+                subGroup = s[i*num_per_group:]
+            else:
+                subGroup = s[i*num_per_group:(i+1)*(num_per_group)]
+            
+            t, st = mona(subGroup, max_stages)
+            stages += st
+            tests += t   # number of tests in subtree
+
+            print("Setting stages to ", max(max_stages, stages))
+            max_stages = max(max_stages, stages)
+        return tests, max_stages
+ 
+def lisa(s):
+    '''
+    s(np.array): binary string of infection status
+    '''
+    num_tests = 0
+    stages = 0
+    ###################################################
+    '''your code here'''
+    print("RUNNING TEST ON original: ", s, "\n")
+    num_tests, stages = mona(s, stages)
+
+    ###################################################
+
+    return num_tests, stages
 
 def Qtesting1_comm_aware(s,communities):
     '''
