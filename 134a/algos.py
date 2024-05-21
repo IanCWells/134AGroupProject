@@ -100,7 +100,7 @@ def diag_splitting(s):
 
 def num_infected(s):
     inf_people = 0
-    for i in s:
+    for i in range(len(s)):
         inf_people += s[i]
     return inf_people
 
@@ -142,12 +142,11 @@ def Qtesting1(s):
     ###################################################
     '''your code here'''
     print("RUNNING TEST ON original: ", s, "\n")
-    num_tests += SG(s)
+    num_tests, stages = mona(s, stages)
 
     ###################################################
 
     return num_tests, stages
-
 
 def Qtesting2(s):
     '''
@@ -157,8 +156,11 @@ def Qtesting2(s):
     stages = 0
     ###################################################
     '''your code here'''
-
+    print("RUNNING TEST ON original: ", s, "\n")
+    num_tests, stages = pablo(s, stages)
     ###################################################
+
+    return num_tests,stages
 
 
 
