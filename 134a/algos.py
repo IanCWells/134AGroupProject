@@ -163,9 +163,6 @@ def Qtesting2(s):
     return num_tests,stages
 
 
-
-    return num_tests,stages
-
 def mona(s, max_stages):
     inf_people = num_infected(s)
     print("\nTESTING group: ", s)
@@ -198,21 +195,6 @@ def mona(s, max_stages):
             print("Setting stages to ", max(max_stages, stages))
             max_stages = max(max_stages, stages)
         return tests, max_stages
- 
-def lisa(s):
-    '''
-    s(np.array): binary string of infection status
-    '''
-    num_tests = 0
-    stages = 0
-    ###################################################
-    '''your code here'''
-    print("RUNNING TEST ON original: ", s, "\n")
-    num_tests, stages = mona(s, stages)
-
-    ###################################################
-
-    return num_tests, stages
 
 #Returns a quantized number depending on infections
 #0 
@@ -284,21 +266,6 @@ def pablo(s, max_stages):
 
         max_stages = max(max_stages, stages)
     return tests, max_stages
-    
-
-def picasso(s):
-    '''
-    s(np.array): binary string of infection status
-    '''
-    num_tests = 0
-    stages = 0
-    ###################################################
-    '''your code here'''
-    print("RUNNING TEST ON original: ", s, "\n")
-    num_tests, stages = pablo(s, stages)
-    ###################################################
-
-    return num_tests,stages
 
 
 def Qtesting1_comm_aware(s,communities):
