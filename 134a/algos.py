@@ -105,33 +105,38 @@ def num_infected(s):
     return inf_people
 
 
-def SG(s):
+def mona(s, max_stages):
     inf_people = num_infected(s)
-    print("\nTESTING group: ", s)
+    #print("\nTESTING group: ", s)
+  
 
     if (inf_people  == 1):
-        binary_tests, binary_stages, _ = binary_splitting(s)
-        print("--Num binary tests: ", binary_tests)
-        print("--Num binary stages: ", binary_stages)
-        return 1 + binary_tests
+        binary_tests, binary_stages = diag_splitting(s)
+        #print("--Num binary tests: ", binary_tests)
+        #print("--Num binary stages: ", binary_stages)
+        return 1 + binary_tests, 1 + binary_stages
     elif(inf_people < 1):
-        print("0 infected --> ran only 1 test")
-        return 1
+        #print("0 infected --> ran only 1 test")
+        return 1, 1
     else:
         num_per_group = round(len(s)/inf_people)
         
         # for each subgroup, call function again
-        tests = 1 # = this testing rou
-        for i in range(inf_people):
+        tests = 1 # = this testing group
+        for i in range(int(inf_people)):
+            stages = 1
             if(i == inf_people-1):
                 subGroup = s[i*num_per_group:]
             else:
                 subGroup = s[i*num_per_group:(i+1)*(num_per_group)]
             
-            t = SG(subGroup)
+            t, st = mona(subGroup, max_stages)
+            stages += st
             tests += t   # number of tests in subtree
-        return tests
-    
+
+            #print("Setting stages to ", max(max_stages, stages))
+            max_stages = max(max_stages, stages)
+        return tests, max_stages  
 
 def Qtesting1(s):
     '''
@@ -141,8 +146,9 @@ def Qtesting1(s):
     stages = 0
     ###################################################
     '''your code here'''
-    print("RUNNING TEST ON original: ", s, "\n")
+    #print("RUNNING TEST ON original: ", s, "\n")
     num_tests, stages = mona(s, stages)
+    print("Total tests: ", num_tests, "\tTotal stages: ", stages)
 
     ###################################################
 
@@ -156,45 +162,13 @@ def Qtesting2(s):
     stages = 0
     ###################################################
     '''your code here'''
-    print("RUNNING TEST ON original: ", s, "\n")
+    #print("RUNNING TEST ON original: ", s, "\n")
     num_tests, stages = pablo(s, stages)
+    print("Total tests: ", num_tests, "\tTotal stages: ", stages)
     ###################################################
 
     return num_tests,stages
 
-
-def mona(s, max_stages):
-    inf_people = num_infected(s)
-    print("\nTESTING group: ", s)
-  
-
-    if (inf_people  == 1):
-        binary_tests, binary_stages, _ = binary_splitting(s)
-        print("--Num binary tests: ", binary_tests)
-        print("--Num binary stages: ", binary_stages)
-        return 1 + binary_tests, 1 + binary_stages
-    elif(inf_people < 1):
-        print("0 infected --> ran only 1 test")
-        return 1, 1
-    else:
-        num_per_group = round(len(s)/inf_people)
-        
-        # for each subgroup, call function again
-        tests = 1 # = this testing group
-        for i in range(inf_people):
-            stages = 1
-            if(i == inf_people-1):
-                subGroup = s[i*num_per_group:]
-            else:
-                subGroup = s[i*num_per_group:(i+1)*(num_per_group)]
-            
-            t, st = mona(subGroup, max_stages)
-            stages += st
-            tests += t   # number of tests in subtree
-
-            print("Setting stages to ", max(max_stages, stages))
-            max_stages = max(max_stages, stages)
-        return tests, max_stages
 
 #Returns a quantized number depending on infections
 #0 
@@ -221,19 +195,19 @@ def num_infected2(s):
     
 def pablo(s, max_stages):
     inf_range = num_infected2(s)
-    print("\nTESTING group: ", s)
+    #print("\nTESTING group: ", s)
   
     if (inf_range == 0):
-        print("0 infected --> ran only 1 test")
+        #print("0 infected --> ran only 1 test")
         return 1, 1
     elif (inf_range  == 1):
         # Only 1 infected person
         if len(s) == 1:
             return 1,1
         else:
-            binary_tests, binary_stages, _ = binary_splitting(s)
-            print("--Num binary tests: ", binary_tests)
-            print("--Num binary stages: ", binary_stages)
+            binary_tests, binary_stages = diag_splitting(s)
+            #print("--Num binary tests: ", binary_tests)
+            #print("--Num binary stages: ", binary_stages)
             return 1 + binary_tests, 1 + binary_stages
    
     inf_people = 0
@@ -261,8 +235,8 @@ def pablo(s, max_stages):
 
         # delete:
         m = max(max_stages, stages)
-        if (m == stages and m != max_stages):
-            print("Updating max stages from ", max_stages, " to ", stages)
+       # if (m == stages and m != max_stages):
+        #    print("Updating max stages from ", max_stages, " to ", stages)
 
         max_stages = max(max_stages, stages)
     return tests, max_stages
