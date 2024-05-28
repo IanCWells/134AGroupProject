@@ -105,20 +105,16 @@ def num_infected(s):
     return inf_people
 
 
-def mona(s, max_stages):
+def Q1_round(s, max_stages):
     inf_people = num_infected(s)
-    #print("\nTESTING group: ", s)
-  
+    n = len(s)/5
 
-    if (inf_people  == 1):
-        binary_tests, binary_stages = diag_splitting(s)
-        #print("--Num binary tests: ", binary_tests)
-        #print("--Num binary stages: ", binary_stages)
-        return 1 + binary_tests, 1 + binary_stages
-    elif(inf_people < 1):
-        #print("0 infected --> ran only 1 test")
-        return 1, 1
-    else:
+    if(inf_people == 0 or n<=1):    # Only one test + one stage b/c don't need to go any further
+        return 1,1
+    elif( n>0 and inf_people <= n and inf_people >=1):
+        diag_tests, diag_stages = diag_splitting(s)
+        return 1 + diag_tests, 1 + diag_stages
+    else:   # run a recursive version of HGBSA
         num_per_group = round(len(s)/inf_people)
         
         # for each subgroup, call function again
@@ -130,13 +126,12 @@ def mona(s, max_stages):
             else:
                 subGroup = s[i*num_per_group:(i+1)*(num_per_group)]
             
-            t, st = mona(subGroup, max_stages)
+            t, st = Q1_round(subGroup, max_stages)
             stages += st
             tests += t   # number of tests in subtree
 
-            #print("Setting stages to ", max(max_stages, stages))
             max_stages = max(max_stages, stages)
-        return tests, max_stages  
+        return tests, max_stages
 
 def Qtesting1(s):
     '''
@@ -146,29 +141,15 @@ def Qtesting1(s):
     stages = 0
     ###################################################
     '''your code here'''
-    #print("RUNNING TEST ON original: ", s, "\n")
-    num_tests, stages = mona(s, stages)
-    print("Total tests: ", num_tests, "\tTotal stages: ", stages)
+    num_tests, stages = Q1_round(s, stages)
 
     ###################################################
 
     return num_tests, stages
 
-def Qtesting2(s):
-    '''
-    s(np.array): binary string of infection status
-    '''
-    num_tests = 0
-    stages = 0
-    ###################################################
-    '''your code here'''
-    #print("RUNNING TEST ON original: ", s, "\n")
-    num_tests, stages = pablo(s, stages)
-    print("Total tests: ", num_tests, "\tTotal stages: ", stages)
-    ###################################################
 
-    return num_tests,stages
 
+# ************************************ Qtesting2 ************************************
 
 #Returns a quantized number depending on infections
 #0 
@@ -220,7 +201,7 @@ def pablo(s, max_stages):
 
     num_per_group = round(len(s)/inf_people)
         
-        # for each subgroup, call function again
+    # for each subgroup, call function again
     tests = 1 # = this testing group
     for i in range(inf_people):
         stages = 1
@@ -233,43 +214,46 @@ def pablo(s, max_stages):
         stages += st
         tests += t   # number of tests in subtree
 
-        # delete:
-        m = max(max_stages, stages)
-       # if (m == stages and m != max_stages):
-        #    print("Updating max stages from ", max_stages, " to ", stages)
-
         max_stages = max(max_stages, stages)
     return tests, max_stages
 
-
-def Qtesting1_comm_aware(s,communities):
+def Qtesting2(s):
     '''
     s(np.array): binary string of infection status
-    communities(list): the community information
     '''
     num_tests = 0
     stages = 0
     ###################################################
     '''your code here'''
-
+    #print("RUNNING TEST ON original: ", s, "\n")
+    num_tests, stages = pablo(s, stages)
+    #print("Total tests: ", num_tests, "\tTotal stages: ", stages)
     ###################################################
 
-
-
     return num_tests,stages
+
+
+
+def Q1_commaware(communities):
+    tests = 0
+    max_stages = 0
+    for cult in communities:
+        #print("Running tests on ", cult)
+        t, st = Qtesting1(cult)
+        tests += t
+        max_stages = max(st, max_stages)
+    return tests, max_stages+1
 
 def Qtesting2_comm_aware(s,communities):
     '''
     s(np.array): binary string of infection status
     communities(list): the community information
     '''
-    num_tests = 0
-    stages = 0
-    ###################################################
-    '''your code here'''
-
-    ###################################################
-
-
-
-    return num_tests,stages
+    tests = 0
+    max_stages = 0
+    for cult in communities:
+        #print("Running tests on ", cult)
+        t, st = Qtesting2(cult)
+        tests += t
+        max_stages = max(st, max_stages)
+    return tests, max_stages+1
