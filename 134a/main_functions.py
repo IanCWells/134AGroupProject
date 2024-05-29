@@ -35,28 +35,20 @@ def iter(N,M,q0,q1,p0,p1,time_steps,num_sims,method,dataset='sbm'):
         if dataset=='sbm':
             for i in range(num_sims):
                 Gs[i] = SBM(N,M,q0,q1)
-                ###################################################
-                '''your code here'''
                 Individuals[i] = infect(Gs[i],p0,p1,time_steps)
                 s = Individuals[i]
                 Communities[i] = create_communities(s, N,M)
         elif dataset=='iid':
             for i in range(num_sims):
-                ###################################################
-                '''your code here'''
                 individuals = np.random.choice([0, 1], size=N, p=[1 - p0, p0])
                 Individuals[i] = individuals
                 s = Individuals[i]
-                print(s)
                 Communities[i] = create_communities(s, N,M)
-                print(Communities[i])
-                ###################################################
         data['graph'] = Gs
         data['communities'] = Communities
         data['individuals'] = Individuals
         with open(name, 'wb') as infile:
             pickle.dump(data,infile) 
-    #         print('Dataset done!')
 
 
     ###################################################
@@ -82,20 +74,27 @@ def iter(N,M,q0,q1,p0,p1,time_steps,num_sims,method,dataset='sbm'):
         ###################################################
         '''your code to calculate the statistics here''' 
         if(method == "binary"):
+            '''
+            If dataset = iid
+                Then the 'individuals' will be laid out in a randomized way
+            If the dataset = sbm
+                The 'individuals' are organized such that they are next to members of their community
+                B/c within 'infect', the rows of G are organized in such a fashion
+            '''
             G = data['graph']
             communities = data['communities'][i]
             individuals = data['individuals'][i]
             numtests_bs, num_stages_bs, _ = binary_splitting(individuals)
             num_tests += numtests_bs
             num_stages += num_stages_bs
-        elif(method == "Q1"):
+        elif(method == "Q1"):   # iid
             G = data['graph']
             communities = data['communities'][i]
             individuals = data['individuals'][i]
             numtests_q1, num_stages_q1 = Qtesting1(individuals)
             num_tests += numtests_q1
             num_stages += num_stages_q1
-        elif(method == "Q2"):
+        elif(method == "Q2"):   # iid
             G = data['graph']
             communities = data['communities'][i]
             individuals = data['individuals'][i]
@@ -109,18 +108,21 @@ def iter(N,M,q0,q1,p0,p1,time_steps,num_sims,method,dataset='sbm'):
             numtests_diag, num_stages_diag = diag_splitting(individuals)
             num_tests += numtests_diag
             num_stages += num_stages_diag
-        elif(method == "comm1"):
+        elif(method == "comm1"):    # sbm
             G = data['graph']
             communities = data['communities'][i]
             individuals = data['individuals'][i]
-            numtests_diag, num_stages_diag = Q1_commaware(communities)
-            num_tests += numtests_diag
-            num_stages += num_stages_diag
+            numtests_comm1, num_stages_comm1 = Q1_commaware(communities)
+            num_tests += numtests_comm1
+            num_stages += num_stages_comm1
+        elif(method == "comm2"):    # sbm
+            G = data['graph']
+            communities = data['communities'][i]
+            individuals = data['individuals'][i]
+            numtests_comm2, num_stages_comm2 = Q2_commaware(communities)
+            num_tests += numtests_comm2
+            num_stages += num_stages_comm2
 
-        #elif(method == "Q1_C"):
-
-        #elif(method == "Q2_C"):
-        
         ###################################################
 
         # interleave the individuals
@@ -256,3 +258,129 @@ def plot_infect(N, M, q0, q1, p1, time_steps, num_sims, method, values):
     plt.tight_layout()
     plt.show() 
     '''
+
+def plot_iid(N, M, q0, q1, p1, time_steps, num_sims, binary, diag, testing1, testing2, p_values):
+    num_tests_binary_iid = []
+    num_stages_binary_iid = []
+
+    num_tests_diag_iid = []
+    num_stages_diag_iid = []
+
+    num_tests_q1 = []
+    num_stages_q1 = []  
+
+    num_tests_q2 = []
+    num_stages_q2 = []
+
+    # Binary
+    for p0 in p_values:
+        _, _, _, num_tests, num_stages = iter(N, M, q0, q1, p0, p1, time_steps, num_sims, binary, dataset='iid')
+        num_tests_binary_iid.append(num_tests)
+        num_stages_binary_iid.append(num_stages)
+
+    # Diagonal
+    for p0 in p_values:
+        _, _, _, num_tests, num_stages = iter(N, M, q0, q1, p0, p1, time_steps, num_sims, diag, dataset='iid')
+        num_tests_diag_iid.append(num_tests)
+        num_stages_diag_iid.append(num_stages)
+
+    # Q1
+    for p0 in p_values:
+        _, _, _, num_tests, num_stages = iter(N, M, q0, q1, p0, p1, time_steps, num_sims, testing1, dataset='iid')
+        num_tests_q1.append(num_tests)
+        num_stages_q1.append(num_stages)     
+
+    # Q2
+    for p0 in p_values:
+        _, _, _, num_tests, num_stages = iter(N, M, q0, q1, p0, p1, time_steps, num_sims, testing2, dataset='iid')
+        num_tests_q2.append(num_tests)
+        num_stages_q2.append(num_stages) 
+
+
+    plt.figure(figsize=(18, 8))
+    
+    # Plot for number of tests
+    plt.subplot(1, 2, 1)
+    #plt.plot(p_values, num_tests_binary_iid, marker='o', label=binary)
+    plt.plot(p_values, num_tests_diag_iid, marker='x', label=diag)
+    plt.plot(p_values, num_tests_q1, marker='^', label=testing1)
+    plt.plot(p_values, num_tests_q2, marker='^', label=testing2)
+
+    plt.title('Number of Tests vs p0')
+    plt.xlabel('p0')
+    plt.ylabel('Number of Tests')
+    plt.legend()
+    
+    # Plot for number of stages
+    plt.subplot(1, 2, 2)
+    #plt.plot(p_values, num_stages_binary_iid, marker='o', label=binary)
+    plt.plot(p_values, num_stages_diag_iid, marker='x', label=diag)
+    plt.plot(p_values, num_stages_q1, marker='^', label=testing1)
+    plt.plot(p_values, num_stages_q2, marker='^', label=testing2)
+
+    plt.title('Number of Stages vs p0')
+    plt.xlabel('p0')
+    plt.ylabel('Number of Stages')
+    plt.legend()
+    
+    plt.tight_layout()
+    plt.show()
+
+def plot_comms(N, M, q0, q1, p0, time_steps, num_sims, binary, diag, testingcomm1, testingcomm2, p_values):
+    num_tests_binary = []
+    num_stages_binary = []
+
+    num_tests_diag = []
+    num_stages_diag = []
+
+    num_tests_comm1 = []
+    num_stages_comm1 = []
+
+    num_tests_comm2 = []
+    num_stages_comm2 = []  
+    for p1 in p_values:
+        _, _, _, num_tests, num_stages = iter(N, M, q0, q1, p0, p1, time_steps, num_sims, binary, dataset='sbm')
+        num_tests_binary.append(num_tests)
+        num_stages_binary.append(num_stages)
+
+    for p1 in p_values:
+        _, _, _, num_tests, num_stages = iter(N, M, q0, q1, p0, p1, time_steps, num_sims, diag, dataset='sbm')
+        num_tests_diag.append(num_tests)
+        num_stages_diag.append(num_stages)
+
+    # Community testing 1
+    for p1 in p_values:
+        _, _, _, num_tests, num_stages = iter(N, M, q0, q1, p0, p1, time_steps, num_sims, testingcomm1, dataset='sbm')
+        num_tests_comm1.append(num_tests)
+        num_stages_comm1.append(num_stages)     
+
+    for p1 in p_values:
+        _, _, _, num_tests, num_stages = iter(N, M, q0, q1, p0, p1, time_steps, num_sims, testingcomm2, dataset='sbm')
+        num_tests_comm2.append(num_tests)
+        num_stages_comm2.append(num_stages) 
+    plt.figure(figsize=(18, 8))
+    
+    # Plot for number of tests
+    plt.subplot(1, 2, 1)
+    #plt.plot(p_values, num_tests_binary, marker='o', label=binary)
+    plt.plot(p_values, num_tests_diag, marker='x', label=diag)
+    plt.plot(p_values, num_tests_comm1, marker='p', label=testingcomm1)
+    plt.plot(p_values, num_tests_comm2, marker='o', label=testingcomm2)
+    plt.title('Number of Tests vs p1')
+    plt.xlabel('p1')
+    plt.ylabel('Number of Tests')
+    plt.legend()
+    
+    # Plot for number of stages
+    plt.subplot(1, 2, 2)
+   # plt.plot(p_values, num_stages_binary, marker='o', label=binary)
+    plt.plot(p_values, num_stages_diag, marker='x', label=diag)
+    plt.plot(p_values, num_stages_comm1, marker='p', label=testingcomm1)
+    plt.plot(p_values, num_stages_comm2, marker='o', label=testingcomm2)
+    plt.title('Number of Stages vs p1')
+    plt.xlabel('p1')
+    plt.ylabel('Number of Stages')
+    plt.legend()
+    
+    plt.tight_layout()
+    plt.show()
