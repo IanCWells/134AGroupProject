@@ -1,5 +1,5 @@
 import numpy as np
-import networkx as nx
+#import networkx as nx
 
 def SBM(N,M,q0,q1):
     '''This function is designed to generate the Stochastic Block Model.
