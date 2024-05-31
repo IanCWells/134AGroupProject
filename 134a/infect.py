@@ -49,11 +49,9 @@ def infect(G,p0,p1,time_steps):
     for i in range(N):
         # infect everyone w/ initial probability p0
         individuals[i] = np.random.choice([0,1], p=[1-p0, p0])
-    #print("Original infected individuals: ", individuals)
     
     for _ in range(time_steps):
         individuals = infect_step(G, p1, individuals, N)
-        #print("Infected individuals after step ", _, " - ", individuals)
         
     ###################################################
 
