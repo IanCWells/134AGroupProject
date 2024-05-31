@@ -107,11 +107,11 @@ def num_infected(s):
 
 def Q1_round(s, max_stages):
     inf_people = num_infected(s)
-    n = len(s)/20
+    n = round(len(s)/10)
 
-    if(inf_people == 0 or n<=1):    # Only one test + one stage b/c don't need to go any further
+    if(inf_people == 0 or len(s)<=1):    # Only one test + one stage b/c don't need to go any further
         return 1,1
-    elif( n>0 and inf_people <= n and inf_people >=1):
+    elif(n <= 1 or (inf_people <= n and inf_people >=1)):
         diag_tests, diag_stages = diag_splitting(s)
         return 1 + diag_tests, 1 + diag_stages
     else:   # run a recursive version of HGBSA
@@ -147,26 +147,43 @@ def Qtesting1(s):
 
     return num_tests, stages
 
+def Qtesting1(s):
+    '''
+    s(np.array): binary string of infection status
+    '''
+    num_tests = 0
+    stages = 0
+    ###################################################
+    '''your code here'''
+    num_tests, stages = Q1_round(s, stages)
+
+    ###################################################
+
+    return num_tests, stages
+
 # ************************************ Qtesting2 ************************************
 
 def Q2_round(s, max_stages):
     real_inf_people = num_infected(s)
-    n = len(s)/20
+    n = round(len(s)/10)
     inf_est = 0
 
     # Imitation of the range testing capabilities
-    if (real_inf_people == 1):
+    if (real_inf_people == 0):
+        inf_est = 0
+    elif(real_inf_people == 1):
         inf_est = 1
     elif(real_inf_people == 2 or real_inf_people == 3):
         inf_est = 2
     elif(real_inf_people < 8):
         inf_est = 4
     else:
-        inf_est = len(s)/3
+        inf_est = max(8, round(len(s)/6))
+    
 
-    if (inf_est == 0 or n <= 1): # If negative test or only one person in test
+    if (inf_est == 0 or len(s) <= 1): # If negative test or only one person in test
         return 1,1
-    elif( n>0 and inf_est <= n and inf_est >=1):
+    elif(n <= 1 or (inf_est <= n )): # if 10 or less people, or k is below threshold
         diag_tests, diag_stages = diag_splitting(s)
         return 1+diag_tests, 1+diag_stages
     else:   # run a recursive version of HGBSA
@@ -174,7 +191,7 @@ def Q2_round(s, max_stages):
         
         # for each subgroup, call function again
         tests = 1 # = this testing group
-        for i in range(int(inf_est)):
+        for i in range((inf_est)):
             stages = 1
             if(i == inf_est-1):
                 subGroup = s[i*num_per_group:]
@@ -186,6 +203,7 @@ def Q2_round(s, max_stages):
             tests += t   # number of tests in subtree
 
             max_stages = max(max_stages, stages)
+        print("TOTAL TESTS: ", tests, "\n")
         return tests, max_stages
   
 def Qtesting2(s):
