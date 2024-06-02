@@ -178,7 +178,7 @@ def Q2_round(s, max_stages):
     elif(real_inf_people < 8):
         inf_est = 4
     else:
-        inf_est = max(8, round(len(s)/6))
+        inf_est = max(8, round(len(s)/7))
     
 
     if (inf_est == 0 or len(s) <= 1): # If negative test or only one person in test
@@ -219,6 +219,7 @@ def Qtesting2(s):
     ###################################################
     return num_tests, stages
 
+# ************************************ Community Aware ************************************
 
 def Q1_commaware(communities):
     tests = 0
